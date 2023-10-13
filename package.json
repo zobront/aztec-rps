@@ -1,0 +1,21 @@
+{
+  "name": "rps",
+  "version": "1.0.0",
+  "description": "rock paper scissors",
+  "main": "index.js",
+  "author": "obront",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "yarn clean && tsc -b",
+    "build:dev": "tsc -b --watch",
+    "clean": "rm -rf ./dest tsconfig.tsbuildinfo",
+    "start": "yarn build && DEBUG='token' node ./dest/index.js"
+  },
+  "dependencies": {
+    "@aztec/aztec.js": "^0.8.9",
+    "@aztec/noir-contracts": "^0.8.9",
+    "@types/node": "^20.6.3",
+    "typescript": "^5.2.2"
+  }
+}

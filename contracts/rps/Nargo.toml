@@ -1,0 +1,9 @@
+[package]
+name = "rps"
+type = "contract"
+authors = [""]
+compiler_version = "0.16.0"
+
+[dependencies]
+aztec = { git="https://github.com/AztecProtocol/aztec-packages/", tag="aztec-packages-v0.8.9", directory="yarn-project/aztec-nr/aztec" }
+easy_private_state = { git="https://github.com/AztecProtocol/aztec-packages/", tag="aztec-packages-v0.8.9", directory="yarn-project/aztec-nr/easy-private-state" }
