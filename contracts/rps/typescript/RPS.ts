@@ -6,7 +6,7 @@ import { AztecAddress, CompleteAddress, Contract, ContractBase, ContractFunction
 import { Fr, Point } from '@aztec/foundation/fields';
 import { PXE, PublicKey } from '@aztec/types';
 import { ContractAbi } from '@aztec/foundation/abi';
-import RPSContractAbiJson from '../target/RPS.json' assert { type: 'json' };
+import RPSContractAbiJson from 'target/RPS.json' assert { type: 'json' };
 export const RPSContractAbi = RPSContractAbiJson as ContractAbi;
 
 /**
