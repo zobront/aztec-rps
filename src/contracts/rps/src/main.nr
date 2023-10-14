@@ -81,6 +81,10 @@ contract RPS {
 
     #[aztec(public)]
     fn challengeeThrow(game_id: Field, throw_value: Field) {
+        // 1 = rock, 2 = paper, 3 = scissors
+        assert(throw_value as u32 > 0);
+        assert(throw_value as u32 < 4);
+
         let mut game = storage.games.at(game_id).read();
 
         // if a challengee has been set, only they can throw in response
@@ -90,6 +94,9 @@ contract RPS {
         } else {
             game.challengee.address = context.msg_sender();
         }
+
+        // make sure the throw hasn't happened yet
+        assert(game.challengeeThrow == 0);
 
         // the throw can live in public state because challenger throw has already been made
         game.challengeeThrow = throw_value;
@@ -135,7 +142,10 @@ contract RPS {
 
     #[aztec(public)]
     internal fn _validateAndUpdateLeaderboard(game_id: Field, outcome: Field, challengerThrow: Field) {
-        let game = storage.games.at(game_id).read();
+        let mut game = storage.games.at(game_id).read();
+
+        // ensure the game hasn't already been settled
+        assert(game.settled == 0);
 
         let challengee = game.challengee.address;
         let challenger = game.challenger.address;
@@ -161,5 +171,9 @@ contract RPS {
         } else {
             assert(challengerThrow == game.challengeeThrow);
         }
+
+        // settle the game so this can't be called again
+        game.settled = 1;
+        storage.games.at(game_id).write(game);
     }
 }
