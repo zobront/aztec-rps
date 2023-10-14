@@ -111,6 +111,7 @@ contract RPS {
 
         // if 1 day has passed since the challengee threw and challenger hasn't settled, challengee wins
         let timeout = game.challengeeThrowTime + (60 * 60 * 24);
+        assert(timeout as u32 > 0);
         assert(context.timestamp() as u32 > timeout as u32);
 
         // update the leaderboard based on the win
