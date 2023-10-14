@@ -1,5 +1,5 @@
 mod game;
-mod throw;
+mod thrownote;
 
 contract RPS {
     use dep::std::option::Option;
@@ -23,9 +23,8 @@ contract RPS {
 
     use crate::{
         game::{Game, GameMethods, GAME_SERIALIZED_LEN},
-        throw::{ThrowNote, ThrowNoteMethods, THROW_NOTE_LEN},
+        thrownote::{ThrowNote, ThrowNoteMethods, THROW_NOTE_LEN},
     };
-
 
     struct Storage {
         // game_id => game data
@@ -81,7 +80,7 @@ contract RPS {
     }
 
     #[aztec(public)]
-    fn throw(game_id: Field, throw: Field) {
+    fn challengeeThrow(game_id: Field, throw_value: Field) {
         let mut game = storage.games.at(game_id).read();
 
         // if a challengee has been set, only they can throw in response
@@ -93,41 +92,17 @@ contract RPS {
         }
 
         // the throw can live in public state because challenger throw has already been made
-        game.challengeeThrow = throw;
+        game.challengeeThrow = throw_value;
         game.challengeeThrowTime = context.timestamp();
         storage.games.at(game_id).write(game);
     }
 
     #[aztec(private)]
-    fn settle(game_id: Field) {
+    fn settle(game_id: Field, outcome: Field) {
+        assert(outcome as u32 < 3); // 0 = tie, 1 = win, 2 = lose
         let challengerThrow = storage.privateThrows.at(game_id).get_note().choice;
-        let game = storage.games.at(game_id).read();
-        let challengee = game.challengee.address;
-        let challenger = game.challenger.address;
-
-        let selector = compute_selector("_updateLeaderboard(AztecAddress,AztecAddress)");
-
-        if (challengerThrow == 1) {
-            if (game.challengeeThrow == 2) {
-                context.call_public_function(context.this_address(), selector, [challengee, challenger])
-            } else if (game.challengeeThrow == 3) {
-                context.call_public_function(context.this_address(), selector, [challenger, challengee])
-            } // otherwise it's a tie, no action
-
-        } else if (challengerThrow == 2) {
-            if (game.challengeeThrow == 1) {
-                context.call_public_function(context.this_address(), selector, [challenger, challengee])
-            } else if (game.challengeeThrow == 3) {
-                context.call_public_function(context.this_address(), selector, [challengee, challenger])
-            } // otherwise it's a tie, no action
-
-        } else if (challengerThrow == 3) {
-            if (game.challengeeThrow == 1) {
-                context.call_public_function(context.this_address(), selector, [challengee, challenger])
-            } else if (game.challengeeThrow == 2) {
-                context.call_public_function(context.this_address(), selector, [challenger, challengee])
-            } // otherwise it's a tie, no action
-        }
+        let selector = compute_selector("_validateAndUpdateLeaderboard(Field,Field,Field)");
+        context.call_public_function(context.this_address(), selector, [game_id, outcome, challengerThrow]);
     }
 
     #[aztec(public)]
@@ -139,8 +114,8 @@ contract RPS {
         assert(context.timestamp() as u32 > timeout as u32);
 
         // update the leaderboard based on the win
-        let selector = compute_selector("_updateLeaderboard(AztecAddress,AztecAddress)");
-        context.call_public_function(context.this_address(), selector, [game.challengee.address, game.challenger.address])
+        storage.wins.at(game.challengee.address).write(storage.wins.at(game.challengee.address).read() + 1);
+        storage.losses.at(game.challenger.address).write(storage.losses.at(game.challenger.address).read() + 1);
     }
 
     ////////////////////////////////
@@ -158,9 +133,32 @@ contract RPS {
     }
 
     #[aztec(public)]
-    internal fn _updateLeaderboard(winner: AztecAddress, loser: AztecAddress) {
+    internal fn _validateAndUpdateLeaderboard(game_id: Field, outcome: Field, challengerThrow: Field) {
+        let game = storage.games.at(game_id).read();
+
+        let challengee = game.challengee.address;
+        let challenger = game.challenger.address;
+
+        // validate the submitted outcome was true based on the throws
         // update the public wins and losses for the two players
-        storage.wins.at(winner.address).write(storage.wins.at(winner.address).read() + 1);
-        storage.losses.at(loser.address).write(storage.losses.at(loser.address).read() + 1);
+        if (outcome == 1) {
+            if (challengerThrow == 1) {
+                assert(game.challengeeThrow == 3);
+            } else {
+                assert(challengerThrow == game.challengeeThrow + 1);
+            }
+            storage.wins.at(challenger).write(storage.wins.at(challenger).read() + 1);
+            storage.losses.at(challengee).write(storage.losses.at(challengee).read() + 1);
+        } else if (outcome == 2) {
+            if (challengerThrow == 3) {
+                assert(game.challengeeThrow == 1);
+            } else {
+                assert(challengerThrow == game.challengeeThrow - 1);
+            }
+            storage.wins.at(challengee).write(storage.wins.at(challengee).read() + 1);
+            storage.losses.at(challenger).write(storage.losses.at(challenger).read() + 1);
+        } else {
+            assert(challengerThrow == game.challengeeThrow);
+        }
     }
 }

@@ -9,6 +9,7 @@
       "strict": true,
       "declaration": true,
       "allowSyntheticDefaultImports": true,
+    //   "allowImportingTsExtensions": true,
       "esModuleInterop": true,
       "downlevelIteration": true,
       "inlineSourceMap": true,
@@ -19,5 +20,5 @@
       "skipLibCheck": true
     },
     "references": [],
-    "include": ["src", "src/*.json", "contracts"]
+    "include": ["src", "src/**/*.ts", "src/**/*.nr", "src/**/*.json"]
   }

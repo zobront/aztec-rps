@@ -5,25 +5,25 @@
 import { AztecAddress, CompleteAddress, Contract, ContractBase, ContractFunctionInteraction, ContractMethod, DeployMethod, EthAddress, FieldLike, AztecAddressLike, EthAddressLike, Wallet } from '@aztec/aztec.js';
 import { Fr, Point } from '@aztec/foundation/fields';
 import { PXE, PublicKey } from '@aztec/types';
-import { ContractAbi } from '@aztec/foundation/abi';
-import RPSContractAbiJson from 'target/RPS.json' assert { type: 'json' };
-export const RPSContractAbi = RPSContractAbiJson as ContractAbi;
+import { ContractArtifact } from '@aztec/foundation/abi';
+import RPSContractArtifactJson from '../contracts/rps/target/RPS.json' assert { type: 'json' };
+export const RPSContractArtifact = RPSContractArtifactJson as ContractArtifact;
 
 /**
  * Type-safe interface for contract RPS;
  */
 export class RPSContract extends ContractBase {
-
+  
   private constructor(
     completeAddress: CompleteAddress,
     wallet: Wallet,
     portalContract = EthAddress.ZERO
   ) {
-    super(completeAddress, RPSContractAbi, wallet, portalContract);
+    super(completeAddress, RPSContractArtifact, wallet, portalContract);
   }
+  
 
-
-
+  
   /**
    * Creates a contract instance.
    * @param address - The deployed contract's address.
@@ -34,50 +34,53 @@ export class RPSContract extends ContractBase {
     address: AztecAddress,
     wallet: Wallet,
   ) {
-    return Contract.at(address, RPSContract.abi, wallet) as Promise<RPSContract>;
+    return Contract.at(address, RPSContract.artifact, wallet) as Promise<RPSContract>;
   }
 
-
+  
   /**
    * Creates a tx to deploy a new instance of this contract.
    */
   public static deploy(pxe: PXE, ) {
-    return new DeployMethod<RPSContract>(Point.ZERO, pxe, RPSContractAbi, Array.from(arguments).slice(1));
+    return new DeployMethod<RPSContract>(Point.ZERO, pxe, RPSContractArtifact, Array.from(arguments).slice(1));
   }
 
   /**
    * Creates a tx to deploy a new instance of this contract using the specified public key to derive the address.
    */
   public static deployWithPublicKey(pxe: PXE, publicKey: PublicKey, ) {
-    return new DeployMethod<RPSContract>(publicKey, pxe, RPSContractAbi, Array.from(arguments).slice(2));
+    return new DeployMethod<RPSContract>(publicKey, pxe, RPSContractArtifact, Array.from(arguments).slice(2));
   }
+  
 
-
-
+  
   /**
-   * Returns this contract's ABI.
+   * Returns this contract's artifact.
    */
-  public static get abi(): ContractAbi {
-    return RPSContractAbi;
+  public static get artifact(): ContractArtifact {
+    return RPSContractArtifact;
   }
-
+  
 
   /** Type-safe wrappers for the public methods exposed by the contract. */
   public methods!: {
-
-    /** _updateLeaderboard(winner: struct, loser: struct) */
-    _updateLeaderboard: ((winner: AztecAddressLike, loser: AztecAddressLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
-
+    
     /** _validateAndAddGame(challengee: struct, game_id: field) */
     _validateAndAddGame: ((challengee: AztecAddressLike, game_id: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
+
+    /** _validateAndUpdateLeaderboard(game_id: field, outcome: field, challengerThrow: field) */
+    _validateAndUpdateLeaderboard: ((game_id: FieldLike, outcome: FieldLike, challengerThrow: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
 
     /** challenge(challengee: struct, game_id: field, first_throw: field) */
     challenge: ((challengee: AztecAddressLike, game_id: FieldLike, first_throw: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
 
-    /** settle(game_id: field) */
-    settle: ((game_id: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
+    /** challengeeThrow(game_id: field, throw_value: field) */
+    challengeeThrow: ((game_id: FieldLike, throw_value: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
 
-    /** throw(game_id: field, throw: field) */
-    throw: ((game_id: FieldLike, throw: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
+    /** settle(game_id: field, outcome: field) */
+    settle: ((game_id: FieldLike, outcome: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
+
+    /** timeout(game_id: field) */
+    timeout: ((game_id: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
   };
 }

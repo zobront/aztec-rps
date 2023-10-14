@@ -8,16 +8,15 @@ import {
     getSandboxAccountsWallets,
     getSchnorrAccount,
     waitForSandbox,
-  } from '@aztec/aztec.js';
-  import { GrumpkinScalar } from '@aztec/circuits.js';
-//   import { RPS } from 'contracts/rps/src/main.nr';
-
-  import { format } from 'util';
+} from '@aztec/aztec.js';
+import { GrumpkinScalar } from '@aztec/circuits.js';
+import * as RPSContract from './interfaces/RPS.ts';
+import { format } from 'util';
 
   const { PXE_URL = 'http://localhost:8080' } = process.env;
 
   async function main() {
-  ////////////// CREATE THE CLIENT INTERFACE AND CONTACT THE SANDBOX //////////////
+  //////////// CREATE THE CLIENT INTERFACE AND CONTACT THE SANDBOX //////////////
       const logger = createDebugLogger('rps');
 
       // We create PXE client connected to the sandbox URL
@@ -37,17 +36,17 @@ import {
     logger(`Loaded P1's account at ${player1.toShortString()}`);
     logger(`Loaded P2's account at ${player2.toShortString()}`);
 
-    ////////////// DEPLOY OUR TOKEN CONTRACT //////////////
+    //////////// DEPLOY OUR TOKEN CONTRACT //////////////
 
-    // logger(`Deploying rock paper scissors contract...`);
-    // const contract = await RPS.deploy(pxe).send().deployed();
+    logger(`Deploying rock paper scissors contract...`);
+    // const contract = await RPSContract.deploy(pxe).send().deployed();
     // logger(`Contract successfully deployed at address ${contract.address.toShortString()}`);
 
     // // Create the contract abstraction and link to player 1's wallet for future signing
-    // const tokenContractP1 = await RPS.at(contract.address, accounts[0]);
-    // const tokenContractP2 = await RPS.at(contract.address, accounts[1]);
+    // const tokenContractP1 = await RPSContract.at(contract.address, accounts[0]);
+    // const tokenContractP2 = await RPSContract.at(contract.address, accounts[1]);
 
-    // ////////////// CREATE A NEW GAME //////////////
+    ////////////// CREATE A NEW GAME //////////////
 
     // await tokenContractP1.methods.challenge(player2, 0, 1);
   }
