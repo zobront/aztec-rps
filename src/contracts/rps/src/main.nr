@@ -115,6 +115,7 @@ contract RPS {
     #[aztec(public)]
     fn timeout(game_id: Field) {
         let game = storage.games.at(game_id).read();
+        assert(!game.settled);
 
         // if 1 day has passed since the challengee threw and challenger hasn't settled, challengee wins
         let timeout = game.challengeeThrowTime + (60 * 60 * 24);
@@ -145,7 +146,7 @@ contract RPS {
         let mut game = storage.games.at(game_id).read();
 
         // ensure the game hasn't already been settled
-        assert(game.settled == 0);
+        assert(!game.settled);
 
         let challengee = game.challengee.address;
         let challenger = game.challenger.address;
@@ -173,7 +174,7 @@ contract RPS {
         }
 
         // settle the game so this can't be called again
-        game.settled = 1;
+        game.settled = true;
         storage.games.at(game_id).write(game);
     }
 }

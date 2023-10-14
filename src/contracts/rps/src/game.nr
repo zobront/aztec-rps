@@ -1,6 +1,9 @@
 use dep::aztec::types::{
     address::{AztecAddress},
-    type_serialization::TypeSerializationInterface
+    type_serialization::{
+        TypeSerializationInterface,
+        bool_serialization::{BoolSerializationMethods, BOOL_SERIALIZED_LEN}
+    }
 };
 
 global GAME_SERIALIZED_LEN: Field = 5;
@@ -10,7 +13,7 @@ struct Game {
     challengee: AztecAddress,
     challengeeThrow: Field,
     challengeeThrowTime: Field,
-    settled: Field
+    settled: bool
 }
 
 impl Game {
@@ -20,7 +23,7 @@ impl Game {
             challengee,
             challengeeThrow: 0,
             challengeeThrowTime: 0,
-            settled: 0
+            settled: false
         }
     }
 
@@ -29,7 +32,7 @@ impl Game {
         self.challengee.address as Field,
         self.challengeeThrow,
         self.challengeeThrowTime,
-        self.settled]
+        self.settled as Field]
     }
 }
 
@@ -39,7 +42,7 @@ fn deserialize(preimage: [Field; GAME_SERIALIZED_LEN]) -> Game {
         challengee: AztecAddress::new(preimage[1]),
         challengeeThrow: preimage[2],
         challengeeThrowTime: preimage[3],
-        settled: preimage[4]
+        settled: preimage[4] != 0
     }
 }
 
